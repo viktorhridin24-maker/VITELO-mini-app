@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>VITELO mini app</title>
+  <!-- Правильный метатег для масштаба -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <!-- 1. ПОДКЛЮЧАЕМ SDK ТЕЛЕГРАМА (Исправленный адрес) -->
+  <script src="https://telegram.org"></script>
+
+  <style>
+    /* 2. ДОБАВИЛИ СТИЛИ ДЛЯ ФИКСАЦИИ ВЫСОТЫ */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: var(--tg-viewport-height, 100vh);
+      overflow: hidden;
+      background-color: var(--tg-theme-bg-color, #1b1212);
+      color: var(--tg-theme-text-color, #000000);
+      font-family: sans-serif;
+    }
+    
+    .container {
+      padding: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="180.52825" height="34.42788" viewBox="0,0,180.52825,34.42788"><g transform="translate(-149.73588,-162.78606)"><g fill="#fffefe" stroke="none" stroke-width="0" stroke-miterlimit="10"><path d="M260.93176,163.03197h10.8843v23.05175h23.02443v10.8843h-33.9266v-10.8843h0.01786z"/><path d="M225.68418,173.89788h-0.01786v-10.8843h33.9266v10.8843h-23.02443v0.67363h15.59238v10.8843h-15.59238v0.64631h23.02443v10.8843h-33.9266v-10.8843h0.01786z"/><path d="M156.44149,196.9633l-6.7056,-33.9266h10.8843l2.88964,14.61996l2.88964,-14.61996h10.8843l-6.7056,33.9266z"/><path d="M178.09431,196.9633v-33.9266h10.8843v33.9266z"/><path d="M223.59994,173.89205h-11.52115v23.10019h-10.88431v-23.10019h-11.52115v-10.8843h33.9266z"/><path d="M330.26414,180c0,9.507 -7.70694,17.21394 -17.21394,17.21394c-9.507,0 -17.21394,-7.70694 -17.21394,-17.21394c0,-9.507 7.70694,-17.21394 17.21394,-17.21394c9.507,0 17.21394,7.70694 17.21394,17.21394zM313.05019,173.21279c-3.74847,0 -6.78721,3.03874 -6.78721,6.78721c0,3.74847 3.03874,6.78721 6.78721,6.78721c3.74847,0 6.78721,-3.03874 6.78721,-6.78721c0,-3.74847 -3.03874,-6.78721 -6.78721,-6.78721z"/></g></g></svg>
+    <p>мини апп пока не готовый.</p>
+  </div>
+
+  <!-- 3. ИНИЦИАЛИЗАЦИЯ И РАСШИРЕНИЕ (Убрали лишние вложенные теги) -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // Проверяем, что скрипт загрузился внутри Telegram
+      const tg = window.Telegram.WebApp;
+
+      // Сообщаем Telegram, что приложение готово
+      tg.ready();
+
+      // Раскрываем на максимум
+      tg.expand(); 
+    });
+  </script>
+</body>
+</html>
