@@ -1,52 +1,114 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>VITELO mini app</title>
-  <!-- Правильный метатег для масштаба -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  
-  <!-- 1. ПОДКЛЮЧАЕМ SDK ТЕЛЕГРАМА (Исправленный адрес) -->
-  <script src="https://telegram.org"></script>
-
-  <style>
-    /* 2. ДОБАВИЛИ СТИЛИ ДЛЯ ФИКСАЦИИ ВЫСОТЫ */
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: var(--tg-viewport-height, 100vh);
-      overflow: hidden;
-      background-color: var(--tg-theme-bg-color, #1b1212);
-      color: var(--tg-theme-text-color, #000000);
-      font-family: sans-serif;
-    }
-    
-    .container {
-      padding: 20px;
-      text-align: center;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>VITELO mini app</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#700707;--deep:#4a0404;--card:#8a1010;--line:#b22a2a;--text:#fff;--dim:#f0b8b8;--gold:#ffd24a}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:var(--tg-viewport-height,100vh);background:var(--bg);color:var(--text);font-family:"Comic Sans MS","Comic Neue",cursive,sans-serif}
+.wrap{max-width:480px;margin:0 auto;padding:16px 16px 40px}
+.logo{display:block;margin:6px auto 14px;width:160px;height:auto}
+.hero{background:var(--deep);border:2px solid var(--line);border-radius:18px;padding:18px;text-align:center}
+.hero .who{color:var(--dim);font-size:14px}
+.hero .bal{font-size:46px;font-weight:bold;color:var(--gold);line-height:1.1;margin:6px 0 2px}
+.hero .unit{font-size:15px;color:var(--dim)}
+.ban{background:#000;color:#ff8a8a;padding:8px;border-radius:10px;margin-top:10px;font-size:14px}
+nav{display:flex;gap:8px;margin:16px 0}
+nav button{flex:1;font:inherit;font-size:15px;padding:10px 4px;color:var(--text);background:transparent;border:2px solid var(--line);border-radius:12px;cursor:pointer}
+nav button.on{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:bold}
+nav button:focus-visible,.buy:focus-visible{outline:3px solid var(--gold)}
+.row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px dashed var(--line)}
+.row:last-child{border-bottom:0}
+.grow{flex:1;min-width:0}
+.t{font-size:15px}.s{font-size:12px;color:var(--dim)}
+.plus{color:#9dffb0;font-weight:bold;white-space:nowrap}.minus{color:#ffb0b0;font-weight:bold;white-space:nowrap}
+.emoji{font-size:28px;width:38px;text-align:center}
+.cnt{background:var(--deep);border-radius:10px;padding:4px 10px;font-weight:bold}
+.buy{font:inherit;padding:8px 12px;border:0;border-radius:10px;background:var(--gold);color:#3a0000;font-weight:bold;cursor:pointer}
+.buy:disabled{opacity:.45}
+.h{margin:18px 0 4px;font-size:16px}
+.empty{color:var(--dim);text-align:center;padding:26px 0}
+#err{background:#000;padding:14px;border-radius:12px;text-align:center}
+</style>
 </head>
 <body>
+<div class="wrap">
+  <svg class="logo" viewBox="0 0 180.52825 34.42788" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-149.73588,-162.78606)"><g fill="#fffefe"><path d="M260.93176,163.03197h10.8843v23.05175h23.02443v10.8843h-33.9266v-10.8843h0.01786z"/><path d="M225.68418,173.89788h-0.01786v-10.8843h33.9266v10.8843h-23.02443v0.67363h15.59238v10.8843h-15.59238v0.64631h23.02443v10.8843h-33.9266v-10.8843h0.01786z"/><path d="M156.44149,196.9633l-6.7056,-33.9266h10.8843l2.88964,14.61996l2.88964,-14.61996h10.8843l-6.7056,33.9266z"/><path d="M178.09431,196.9633v-33.9266h10.8843v33.9266z"/><path d="M223.59994,173.89205h-11.52115v23.10019h-10.88431v-23.10019h-11.52115v-10.8843h33.9266z"/><path d="M330.26414,180c0,9.507 -7.70694,17.21394 -17.21394,17.21394c-9.507,0 -17.21394,-7.70694 -17.21394,-17.21394c0,-9.507 7.70694,-17.21394 17.21394,-17.21394c9.507,0 17.21394,7.70694 17.21394,17.21394zM313.05019,173.21279c-3.74847,0 -6.78721,3.03874 -6.78721,6.78721c0,3.74847 3.03874,6.78721 6.78721,6.78721c3.74847,0 6.78721,-3.03874 6.78721,-6.78721c0,-3.74847 -3.03874,-6.78721 -6.78721,-6.78721z"/></g></g></svg>
 
-  <div class="container">
-     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="180.52825" height="34.42788" viewBox="0,0,180.52825,34.42788"><g transform="translate(-149.73588,-162.78606)"><g fill="#fffefe" stroke="none" stroke-width="0" stroke-miterlimit="10"><path d="M260.93176,163.03197h10.8843v23.05175h23.02443v10.8843h-33.9266v-10.8843h0.01786z"/><path d="M225.68418,173.89788h-0.01786v-10.8843h33.9266v10.8843h-23.02443v0.67363h15.59238v10.8843h-15.59238v0.64631h23.02443v10.8843h-33.9266v-10.8843h0.01786z"/><path d="M156.44149,196.9633l-6.7056,-33.9266h10.8843l2.88964,14.61996l2.88964,-14.61996h10.8843l-6.7056,33.9266z"/><path d="M178.09431,196.9633v-33.9266h10.8843v33.9266z"/><path d="M223.59994,173.89205h-11.52115v23.10019h-10.88431v-23.10019h-11.52115v-10.8843h33.9266z"/><path d="M330.26414,180c0,9.507 -7.70694,17.21394 -17.21394,17.21394c-9.507,0 -17.21394,-7.70694 -17.21394,-17.21394c0,-9.507 7.70694,-17.21394 17.21394,-17.21394c9.507,0 17.21394,7.70694 17.21394,17.21394zM313.05019,173.21279c-3.74847,0 -6.78721,3.03874 -6.78721,6.78721c0,3.74847 3.03874,6.78721 6.78721,6.78721c3.74847,0 6.78721,-3.03874 6.78721,-6.78721c0,-3.74847 -3.03874,-6.78721 -6.78721,-6.78721z"/></g></g></svg>
-    <p>мини апп пока не готовый.</p>
-  </div>
+  <div id="app"><div class="empty">Загружаю кашолку…</div></div>
+</div>
 
-  <!-- 3. ИНИЦИАЛИЗАЦИЯ И РАСШИРЕНИЕ (Убрали лишние вложенные теги) -->
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      // Проверяем, что скрипт загрузился внутри Telegram
-      const tg = window.Telegram.WebApp;
+<script>
+// ВПИШИ СЮДА адрес своего API (см. api.py), без слэша в конце
+const API_URL = "https://api.vktrteam.net";
 
-      // Сообщаем Telegram, что приложение готово
-      tg.ready();
+const tg = window.Telegram.WebApp;
+tg.ready(); tg.expand();
 
-      // Раскрываем на максимум
-      tg.expand(); 
-    });
-  </script>
+const ICONS = {ascorbinka:"💊", adrenaline:"💉", stop:"🛑", god_item:"💀"};
+let state = null, tab = "wallet";
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => Number(n).toFixed(2);
+
+async function api(path, body) {
+  const r = await fetch(API_URL + path, {
+    method: body ? "POST" : "GET",
+    headers: {"X-Init-Data": tg.initData, "Content-Type": "application/json"},
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.detail || "Ошибка " + r.status);
+  return j;
+}
+
+async function load() {
+  try { state = await api("/api/me"); render(); }
+  catch (e) { $("#app").innerHTML = `<div id="err">Не получилось загрузить: ${esc(e.message)}<br><br>Открой приложение из Telegram и проверь, что API запущен.</div>`; }
+}
+
+function render() {
+  const u = state;
+  const tabs = [["wallet","Кашолка"],["shop","Магазин"],["history","История"]];
+  let body = "";
+  if (tab === "wallet") {
+    body = `<div class="h">Инвентарь</div>` + u.shop.map(i => `
+      <div class="row"><div class="emoji">${ICONS[i.key]||"🎁"}</div>
+      <div class="grow"><div class="t">${esc(i.name)}</div>${i.key==="adrenaline"?`<div class="s">использований: ${u.adrenaline_uses}/3</div>`:""}</div>
+      <div class="cnt">${u.inventory[i.key]||0}</div></div>`).join("");
+  } else if (tab === "shop") {
+    body = u.shop.map(i => `
+      <div class="row"><div class="emoji">${ICONS[i.key]||"🎁"}</div>
+      <div class="grow"><div class="t">${esc(i.name)} <span class="s">[${esc(i.rarity)}]</span></div><div class="s">${esc(i.desc)}</div></div>
+      <button class="buy" data-k="${i.key}" ${u.is_banned||u.balance<i.price?"disabled":""}>${fmt(i.price)} в.</button></div>`).join("");
+  } else {
+    body = u.transactions.length ? u.transactions.map(t => `
+      <div class="row"><div class="grow"><div class="t">${esc(t.note)}</div><div class="s">${new Date(t.ts*1000).toLocaleString("ru-RU")}</div></div>
+      <div class="${t.amount>=0?"plus":"minus"}">${t.amount>=0?"+":""}${fmt(t.amount)}</div></div>`).join("")
+      : `<div class="empty">Операций пока нет. Крути рулетку в чате: «Вить, рулетка».</div>`;
+  }
+  $("#app").innerHTML = `
+    <div class="hero"><div class="who">${esc(u.name)}</div>
+      <div class="bal">${fmt(u.balance)}</div><div class="unit">виткоинов</div>
+      ${u.is_banned?`<div class="ban">Кошелёк заблокирован Витьком</div>`:""}</div>
+    <nav>${tabs.map(([k,n])=>`<button class="${tab===k?"on":""}" data-t="${k}">${n}</button>`).join("")}</nav>
+    <div>${body}</div>`;
+  document.querySelectorAll("nav button").forEach(b => b.onclick = () => { tab = b.dataset.t; render(); });
+  document.querySelectorAll(".buy").forEach(b => b.onclick = () => buy(b.dataset.k));
+}
+
+async function buy(key) {
+  try {
+    await api("/api/buy", {item: key});
+    tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success");
+    await load();
+    tg.showAlert("Куплено! Предмет в инвентаре.");
+  } catch (e) { tg.showAlert(e.message); }
+}
+load();
+</script>
 </body>
 </html>
