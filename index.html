@@ -57,7 +57,7 @@ const fmt = n => Number(n).toFixed(2);
 async function api(path, body) {
   const r = await fetch(API_URL + path, {
     method: body ? "POST" : "GET",
-    headers: {"X-Init-Data": tg.initData, "Content-Type": "application/json"},
+       headers: {"X-Init-Data": tg.initData, "Content-Type": "application/json", "ngrok-skip-browser-warning": "1"},
     body: body ? JSON.stringify(body) : undefined
   });
   const j = await r.json().catch(() => ({}));
