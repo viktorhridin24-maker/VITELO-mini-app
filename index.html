@@ -43,6 +43,9 @@ nav button:focus-visible,.buy:focus-visible{outline:3px solid var(--gold)}
 .ct{font:inherit;text-align:left;padding:10px 12px;color:var(--text);background:var(--card);border:2px solid transparent;border-radius:10px;cursor:pointer}
 .ct.on{border-color:var(--gold);background:var(--bg)}
 .big{width:100%;padding:12px;font-size:16px;margin-top:8px}
+.s{overflow-wrap:anywhere}
+.sheet textarea{width:100%;font:inherit;font-size:15px;padding:10px 12px;margin:0 0 8px;color:var(--text);background:var(--bg);border:2px solid var(--line);border-radius:10px;resize:none}
+.sheet textarea:focus{outline:3px solid var(--gold)}
 #err{background:#000;padding:14px;border-radius:12px;text-align:center}
 </style>
 </head>
@@ -87,7 +90,7 @@ function render() {
   const tabs = [["wallet","Кашолка"],["shop","Магазин"],["history","История"]];
   let body = "";
   if (tab === "wallet") {
-    body = `<button class="send" id="sendbtn" ${u.is_banned?"disabled":""}>💸 передать в.</button><div class="h">инвентарь</div>` + u.shop.map(i => `
+    body = `<button class="send" id="sendbtn" ${u.is_banned?"disabled":""}>💸 передать в.</button><div class="h">Инвентарь</div>` + u.shop.map(i => `
       <div class="row"><div class="emoji">${ICONS[i.key]||"🎁"}</div>
       <div class="grow"><div class="t">${esc(i.name)}</div>${i.key==="adrenaline"?`<div class="s">использований: ${u.adrenaline_uses}/3</div>`:""}</div>
       <div class="cnt">${u.inventory[i.key]||0}</div></div>`).join("");
@@ -98,14 +101,14 @@ function render() {
       <button class="buy" data-k="${i.key}" ${u.is_banned||u.balance<i.price?"disabled":""}>${fmt(i.price)} в.</button></div>`).join("");
   } else {
     body = u.transactions.length ? u.transactions.map(t => `
-      <div class="row"><div class="grow"><div class="t">${esc(t.note)}</div><div class="s">${new Date(t.ts*1000).toLocaleString("ru-RU")}</div></div>
+      <div class="row"><div class="grow"><div class="t">${esc(t.note)}</div>${t.comment?`<div class="s">💬 ${esc(t.comment)}</div>`:""}<div class="s">${new Date(t.ts*1000).toLocaleString("ru-RU")}</div></div>
       <div class="${t.amount>=0?"plus":"minus"}">${t.amount>=0?"+":""}${fmt(t.amount)}</div></div>`).join("")
-      : `<div class="empty">операций пока нет. крути рулетку в чате: «Вить, рулетка».</div>`;
+      : `<div class="empty">Операций пока нет. Крути рулетку в чате: «Вить, рулетка».</div>`;
   }
   $("#app").innerHTML = `
     <div class="hero"><div class="who">${esc(u.name)}</div>
       <div class="bal">${fmt(u.balance)}</div><div class="unit">виткоинов</div>
-      ${u.is_banned?`<div class="ban">кашолка заблокирована модераторами</div>`:""}</div>
+      ${u.is_banned?`<div class="ban">Кошелёк заблокирован Витьком</div>`:""}</div>
     <nav>${tabs.map(([k,n])=>`<button class="${tab===k?"on":""}" data-t="${k}">${n}</button>`).join("")}</nav>
     <div>${body}</div>`;
   document.querySelectorAll("nav button").forEach(b => b.onclick = () => { tab = b.dataset.t; render(); });
@@ -136,7 +139,9 @@ function openTransfer() {
     <div class="s">баланс: ${fmt(state.balance)} в.</div>
     <input id="mq" placeholder="найти игрока по нику…" autocomplete="off">
     <div id="mlist" class="mlist"></div>
-    <input id="mamt" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="Сколько виткоинов">
+    <input id="mamt" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="сколько виткоинов">
+    <textarea id="mnote" maxlength="200" rows="3"></textarea>
+    <div class="s" id="mcnt" style="text-align:right">0/200</div>
     <div id="msel" class="s">выбери получателя</div>
     <button class="buy big" id="mok" disabled>подтвердить</button>
   </div>`;
@@ -145,6 +150,9 @@ function openTransfer() {
   $("#mx").onclick = closeTransfer;
   $("#mq").oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadContacts, 300); };
   $("#mamt").oninput = checkReady;
+  $("#mnote").oninput = () => { $("#mcnt").textContent = $("#mnote").value.length + "/200"; };
+  const PH = ["опиши весь свой заказ с ресторана", "расскажи сказку на ночь", "опиши свой вклад человеку", "за что донатишь?", "напиши пожелание получателю"];
+  $("#mnote").placeholder = PH[Math.floor(Math.random() * PH.length)];
   $("#mok").onclick = confirmTransfer;
   loadContacts();
 }
@@ -157,7 +165,7 @@ async function loadContacts() {
     const r = await api("/api/contacts?q=" + encodeURIComponent(q));
     if (myId !== searchId || !$("#mlist")) return;
     if (!r.contacts.length) {
-      box.innerHTML = `<div class="s">${r.searching ? "никого не нашёл. игрок должен хоть раз написать боту." : "пока нет недавних. начни вводить ник, чтобы найти игрока."}</div>`;
+      box.innerHTML = `<div class="s">${r.searching ? "Никого не нашёл. Игрок должен хоть раз написать боту." : "Пока нет недавних. Начни вводить ник, чтобы найти игрока."}</div>`;
     } else {
       box.innerHTML = (r.searching ? "" : `<div class="s">Недавние:</div>`) + r.contacts.map(c =>
         `<button class="ct${sel && sel.id === c.id ? " on" : ""}" data-id="${c.id}" data-name="${esc(c.name)}">${esc(c.name)}</button>`).join("");
@@ -179,18 +187,19 @@ function checkReady() {
 function confirmTransfer() {
   const a = Math.round(parseFloat($("#mamt").value.replace(",", ".")) * 100) / 100;
   const text = `Передать ${fmt(a)} в. игроку ${sel.name}?`;
-  const go = ok => { if (ok) doTransfer(sel.id, sel.name, a); };
+  const note = $("#mnote").value.trim();
+  const go = ok => { if (ok) doTransfer(sel.id, sel.name, a, note); };
   if (tg.showConfirm) tg.showConfirm(text, go); else go(window.confirm(text));
 }
 
-async function doTransfer(to, name, amount) {
+async function doTransfer(to, name, amount, comment) {
   const btn = $("#mok"); if (btn) btn.disabled = true;
   try {
-    await api("/api/transfer", {to, amount});
+    await api("/api/transfer", {to, amount, comment});
     closeTransfer();
     tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success");
     await load();
-    tg.showAlert(`готово! ${fmt(amount)} в. переданы игроку ${name}.`);
+    tg.showAlert(`Готово! ${fmt(amount)} в. переданы игроку ${name}.`);
   } catch (e) {
     if (btn) btn.disabled = false;
     tg.showAlert(e.message);
