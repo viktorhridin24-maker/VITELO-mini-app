@@ -486,7 +486,7 @@
     try {
       const u = await api("/api/admin/user?user_id=" + admUser);
       if (!alive(c)) return;
-      const names = {ascorbinka: "Аскорбинка", adrenaline: "Адреналин", stop: "Стоп", god_item: "Ар. Бога"};
+      const names = {ascorbinka: "Аскорбинка", adrenaline: "Адреналин", stop: "Стоп", god_item: "Артефакт Бога"};
       c.innerHTML = `
         <div class="box"><div class="t">${esc(u.name)}</div>
           <div class="s">id ${u.id} · заходил: ${ago(u.last_seen)} · регистрация кошелька: ${u.registered ? "пройдена" : "нет"}</div>
@@ -503,11 +503,11 @@
         <button class="send" id="abok">применить</button>
         <div class="h">доступ</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="mini ${u.is_banned ? "" : "alt"}" id="afw">${u.is_banned ? "разблокировать кошелёк" : "заблокировать кошелёк"}</button>
-          <button class="mini ${u.bot_banned ? "" : "alt"}" id="afb">${u.bot_banned ? "разрешить бота" : "запретить бота"}</button>
+          <button class="mini ${u.is_banned ? "" : "alt"}" id="afw">${u.is_banned ? "🔓 разблокировать кошелёк" : "🔒 заблокировать кошелёк"}</button>
+          <button class="mini ${u.bot_banned ? "" : "alt"}" id="afb">${u.bot_banned ? "✅ разрешить бота" : "⛔ запретить бота"}</button>
           <button class="mini alt" id="afp">сбросить приватный код</button></div>
         <div class="h">последние операции</div>
-        ${u.transactions.map(t => `<div class="row"><div class="grow"><div class="t">${esc(t.note)}</div>${t.comment ? `<div class="cm2">${esc(t.comment)}</div>` : ""}
+        ${u.transactions.map(t => `<div class="row"><div class="grow"><div class="t">${esc(t.note)}</div>${t.comment ? `<div class="cm2">💬 ${esc(t.comment)}</div>` : ""}
           <div class="s">${new Date(t.ts * 1000).toLocaleString("ru-RU")}</div></div>
           <div class="${t.amount >= 0 ? "plus" : "minus"}">${t.amount >= 0 ? "+" : ""}${fmt(t.amount)}</div></div>`).join("") || `<div class="s">операций нет</div>`}`;
 
