@@ -169,7 +169,7 @@
     };
   }
 
-  let sub = null;
+  let sub = null, isOwner = false, admTab = "people", admUser = null;
   const date = d => new Date(d + "T00:00:00Z").toLocaleDateString("ru-RU");
   const alive = box => box.isConnected;
   const err = (box, e) => { if (alive(box)) box.innerHTML = `<div class="empty">${esc(e.message)}</div>`; };
@@ -183,7 +183,7 @@
     const b = document.createElement("button");
     b.textContent = "ещё";
     b.className = tab === "more" ? "on" : "";
-    b.onclick = () => { tab = "more"; sub = null; render(); };
+    b.onclick = () => { tab = "more"; sub = null; admUser = null; render(); };
     nav.appendChild(b);
     if (tab === "more") showMore(nav.nextElementSibling);
   };
@@ -196,6 +196,7 @@
         <button class="mcard" data-s="debts"><span class="ic">🧾</span><span><div class="t">долги</div><div class="s">кто кому должен, с комментариями</div></span></button>
         <button class="mcard" data-s="code"><span class="ic">🪪</span><span><div class="t">перекинуть по коду кошелька</div><div class="s">твой общественный код, чаевые и донаты</div></span></button>
         <button class="mcard" data-s="stats"><span class="ic">📊</span><span><div class="t">статистика</div><div class="s">сколько людей в боте и как давно он работает</div></span></button>
+        ${isOwner ? `<button class="mcard" data-s="admin"><span class="ic">🛠</span><span><div class="t">админка</div><div class="s">игроки, предметы, подозрительные</div></span></button>` : ""}
         <button class="mcard" data-s="suggest"><span class="ic">💡</span><span><div class="t">предложка</div><div class="s">идея для бота? напиши Витьку</div></span></button>`;
       div.querySelectorAll(".mcard").forEach(c => c.onclick = () => { sub = c.dataset.s; render(); });
       return;
@@ -203,7 +204,7 @@
     div.innerHTML = `<button class="back">← назад</button><div id="sub"><div class="empty">загружаю…</div></div>`;
     div.querySelector(".back").onclick = () => { sub = null; render(); };
     const box = div.querySelector("#sub");
-    ({news: viewNews, events: viewEvents, debts: viewDebts, code: viewCode, stats: viewStats, suggest: viewSuggest})[sub](box);
+    ({news: viewNews, events: viewEvents, debts: viewDebts, code: viewCode, stats: viewStats, admin: viewAdmin, suggest: viewSuggest})[sub](box);
   }
 
   // ---- что нового ----
@@ -229,11 +230,11 @@
         }).join("");
         const ready = ev.progress.roulette >= ev.need.roulette && ev.progress.transfers >= ev.need.transfers;
         let btn;
-        if (ev.joined) btn = `<div class="t">ты участвуешь</div>`;
+        if (ev.joined) btn = `<div class="t">✅ ты участвуешь</div>`;
         else if (ev.ended) btn = `<div class="s">ивент закончился</div>`;
         else btn = `<button class="send" data-j="${esc(ev.id)}" ${ready ? "" : "disabled"}>${ready ? "участвовать" : "выполни условия"}</button>`;
         const wins = ev.winners.length ? `<div class="h">победители</div><div class="s">${ev.winners.map(esc).join(", ")}</div>` : "";
-        return `<div class="box"><div class="t">${esc(ev.title)}</div>
+        return `<div class="box"><div class="t">🎃 ${esc(ev.title)}</div>
           <div class="s">${esc(ev.desc)}</div>
           <div class="s">приз: ${esc(ev.prize)}</div>
           <div class="s">${esc(date(ev.start))} — ${esc(date(ev.end))} · участников: ${ev.participants}</div>
@@ -258,7 +259,7 @@
       if (!alive(box)) return;
       const item = (x, mine) => `
         <div class="row"><div class="grow"><div class="t">${esc(x.name)} · ${fmt(x.amount)} в.</div>
-        ${x.comment ? `<div class="cm2">${esc(x.comment)}</div>` : ""}
+        ${x.comment ? `<div class="cm2">💬 ${esc(x.comment)}</div>` : ""}
         <div class="s">${new Date(x.ts * 1000).toLocaleDateString("ru-RU")}</div></div>
         <button class="mini ${mine ? "alt" : ""}" data-${mine ? "f" : "p"}="${x.id}">${mine ? "простить" : "погасить"}</button></div>`;
       box.innerHTML = `
@@ -337,8 +338,8 @@
       const bars = s.hourly.map(x => `<div title="${x.n}" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:80px"><div style="height:${Math.max(2, Math.round(x.n / max * 80))}px;background:var(--gold);border-radius:3px 3px 0 0"></div></div>`).join("");
       const labels = s.hourly.map((x, i) => `<div style="flex:1;text-align:center;font-size:10px;color:var(--dim)">${i % 6 === 0 ? new Date(x.h * 1000).getHours() : ""}</div>`).join("");
       const status = s.online
-        ? `бот в сети уже ${dur(s.uptime)}`
-        : `бот сейчас не в сети${s.last_online ? ", последний раз был " + new Date(s.last_online * 1000).toLocaleString("ru-RU") : ""}`;
+        ? `🟢 бот в сети уже ${dur(s.uptime)}`
+        : `🔴 бот сейчас не в сети${s.last_online ? ", последний раз был " + new Date(s.last_online * 1000).toLocaleString("ru-RU") : ""}`;
       box.innerHTML = `
         <div class="box"><div class="t">${esc(status)}</div>
           <div class="s">всего проработал: ${dur(s.uptime_total)}</div></div>
@@ -362,7 +363,7 @@
       const w = await api("/api/wallet");
       if (!alive(box)) return;
       box.innerHTML = `
-        <div class="box"><div class="t">твой общественный код</div>
+        <div class="box"><div class="t">🪪 твой общественный код</div>
           <div class="s">его можно отправить другу, кинуть в канал или в чат: по нему тебе могут перекинуть виткоины (на чай, в долг, в поддержку). списать с кошелька по нему ничего нельзя.</div>
           <div class="codebig">${esc(w.public_code)}</div>
           <button class="mini" id="cpy">скопировать</button>
@@ -408,6 +409,128 @@
     } catch (e) { err(box, e); }
   }
 
+
+  // ---- АДМИНКА (видна только владельцу бота) ----
+  const ago = ts => {
+    if (!ts) return "—";
+    const s = Math.floor(Date.now() / 1000 - ts);
+    if (s < 90) return "только что";
+    if (s < 3600) return Math.floor(s / 60) + " мин назад";
+    if (s < 86400) return Math.floor(s / 3600) + " ч назад";
+    return Math.floor(s / 86400) + " д назад";
+  };
+  const confirmAsk = (text, fn) => {
+    const go = async ok => { if (!ok) return; try { await fn(); } catch (e) { tg.showAlert(e.message); } };
+    if (tg.showConfirm) tg.showConfirm(text, go); else go(window.confirm(text));
+  };
+
+  async function viewAdmin(box) {
+    if (admUser) return viewAdminUser(box);
+    const tabs = [["people", "люди"], ["sus", "подозрительные"], ["feed", "лента"]];
+    box.innerHTML = `<div style="display:flex;gap:6px;margin-bottom:10px">${tabs.map(([k, n]) =>
+      `<button class="mini ${admTab === k ? "" : "alt"}" data-at="${k}">${n}</button>`).join("")}</div><div id="adm"><div class="empty">загружаю…</div></div>`;
+    box.querySelectorAll("[data-at]").forEach(b => b.onclick = () => { admTab = b.dataset.at; viewAdmin(box); });
+    const body = box.querySelector("#adm");
+    try {
+      if (admTab === "people") await admPeople(body);
+      else if (admTab === "sus") await admSus(body, box);
+      else await admFeed(body);
+    } catch (e) { if (alive(body)) body.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+  }
+
+  async function admPeople(body) {
+    body.innerHTML = `<input class="xin" id="aq" placeholder="найти игрока по нику…" autocomplete="off"><div id="alist"></div>`;
+    let timer = null, sid = 0;
+    async function find() {
+      const my = ++sid;
+      const list = await api("/api/admin/users?q=" + encodeURIComponent($("#aq").value.trim()));
+      if (my !== sid || !alive(body)) return;
+      $("#alist").innerHTML = list.length ? list.map(u => `
+        <div class="row" style="cursor:pointer" data-u="${u.id}"><div class="grow"><div class="t">${esc(u.name)} ${u.flagged ? "⚠️" : ""}${u.is_banned ? "🔒" : ""}${u.bot_banned ? "⛔" : ""}</div>
+        <div class="s">заходил: ${ago(u.last_seen)}</div></div><div class="cnt">${fmt(u.balance)}</div></div>`).join("")
+        : `<div class="empty">никого не нашёл</div>`;
+      $("#alist").querySelectorAll("[data-u]").forEach(r => r.onclick = () => { admUser = Number(r.dataset.u); render(); });
+    }
+    $("#aq").oninput = () => { clearTimeout(timer); timer = setTimeout(() => find().catch(() => {}), 300); };
+    await find();
+  }
+
+  async function admSus(body, box) {
+    const s = await api("/api/admin/suspicious");
+    if (!alive(body)) return;
+    body.innerHTML = `<div class="s" style="margin-bottom:8px">правила: до ${s.rules.daily} игр в рулетку за 24 часа; от ${s.rules.hourly} игр за час похоже на майнинг; ${s.rules.burst} переводов за ${s.rules.burst_min} мин или перевод от ${s.rules.big} считаются подозрительными. числа меняются в common.py.</div>` +
+      (s.list.length ? s.list.map(x => `<div class="box"><div class="t">⚠️ ${esc(x.name)}</div>
+        ${x.reasons.map(r => `<div class="cm2">• ${esc(r)}</div>`).join("")}
+        <button class="mini" style="margin-top:8px" data-o="${x.id}">открыть</button></div>`).join("")
+        : `<div class="empty">подозрительных нет, все ведут себя хорошо</div>`);
+    body.querySelectorAll("[data-o]").forEach(b => b.onclick = () => { admUser = Number(b.dataset.o); render(); });
+  }
+
+  async function admFeed(body) {
+    const f = await api("/api/admin/feed");
+    if (!alive(body)) return;
+    const when = ts => new Date(ts * 1000).toLocaleString("ru-RU");
+    body.innerHTML = `<div class="h">действия админа</div>` + (f.admin.map(l => `<div class="row"><div class="grow"><div class="t">${esc(l.action)} · ${esc(l.name)}</div>
+      <div class="s">${esc(l.details || "")} · ${when(l.ts)}</div></div></div>`).join("") || `<div class="s">пока пусто</div>`) +
+      `<div class="h">последние операции игроков</div>` + f.tx.map(t => `<div class="row"><div class="grow"><div class="t">${esc(t.name)}: ${esc(t.note)}</div>
+      <div class="s">${when(t.ts)}</div></div><div class="${t.amount >= 0 ? "plus" : "minus"}">${t.amount >= 0 ? "+" : ""}${fmt(t.amount)}</div></div>`).join("");
+  }
+
+  async function viewAdminUser(box) {
+    box.innerHTML = `<button class="back">← к списку</button><div id="ac"><div class="empty">загружаю…</div></div>`;
+    box.querySelector(".back").onclick = () => { admUser = null; render(); };
+    const outerBack = box.parentElement && box.parentElement.querySelector(":scope > .back");
+    if (outerBack) outerBack.style.display = "none";   // чтобы не было двух кнопок «назад» подряд
+    const c = box.querySelector("#ac");
+    const reload = () => viewAdminUser(box);
+    try {
+      const u = await api("/api/admin/user?user_id=" + admUser);
+      if (!alive(c)) return;
+      const names = {ascorbinka: "Аскорбинка", adrenaline: "Адреналин", stop: "Стоп", god_item: "Ар. Бога"};
+      c.innerHTML = `
+        <div class="box"><div class="t">${esc(u.name)}</div>
+          <div class="s">id ${u.id} · заходил: ${ago(u.last_seen)} · регистрация кошелька: ${u.registered ? "пройдена" : "нет"}</div>
+          <div class="s">рулетка за 24 часа: ${u.roulette_24h} из ${u.limit} (всего записано: ${u.roulette_total})</div>
+          <div class="s">общественный код: ${esc(u.public_code)}</div>
+          <div class="bal" style="font-size:30px;color:var(--gold);margin-top:6px">${fmt(u.balance)}</div>
+          ${u.reasons.length ? u.reasons.map(r => `<div class="cm2" style="color:#ffb0b0">⚠️ ${esc(r)}</div>`).join("") : ""}</div>
+        <div class="h">предметы</div>
+        ${Object.keys(names).map(k => `<div class="row"><div class="grow t">${names[k]}</div><div class="cnt">${u.inventory[k]}</div>
+          <button class="mini alt" data-i="${k}" data-d="-1">−1</button><button class="mini" data-i="${k}" data-d="1">+1</button></div>`).join("")}
+        <div class="h">баланс</div>
+        <input class="xin" id="abd" type="number" step="0.01" placeholder="сколько (с минусом, чтобы забрать)">
+        <input class="xin" id="abr" maxlength="200" placeholder="причина (увидит только админ и игрок в истории)">
+        <button class="send" id="abok">применить</button>
+        <div class="h">доступ</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="mini ${u.is_banned ? "" : "alt"}" id="afw">${u.is_banned ? "разблокировать кошелёк" : "заблокировать кошелёк"}</button>
+          <button class="mini ${u.bot_banned ? "" : "alt"}" id="afb">${u.bot_banned ? "разрешить бота" : "запретить бота"}</button>
+          <button class="mini alt" id="afp">сбросить приватный код</button></div>
+        <div class="h">последние операции</div>
+        ${u.transactions.map(t => `<div class="row"><div class="grow"><div class="t">${esc(t.note)}</div>${t.comment ? `<div class="cm2">${esc(t.comment)}</div>` : ""}
+          <div class="s">${new Date(t.ts * 1000).toLocaleString("ru-RU")}</div></div>
+          <div class="${t.amount >= 0 ? "plus" : "minus"}">${t.amount >= 0 ? "+" : ""}${fmt(t.amount)}</div></div>`).join("") || `<div class="s">операций нет</div>`}`;
+
+      c.querySelectorAll("[data-i]").forEach(b => b.onclick = () => {
+        const d = Number(b.dataset.d), nm = names[b.dataset.i];
+        confirmAsk(`${d > 0 ? "выдать" : "забрать"}: ${nm} ×1 (${u.name})?`, async () => {
+          await api("/api/admin/item", {user_id: u.id, item: b.dataset.i, delta: d}); reload(); });
+      });
+      c.querySelector("#abok").onclick = () => {
+        const delta = parseFloat(c.querySelector("#abd").value.replace(",", "."));
+        if (!delta) { tg.showAlert("укажи сумму"); return; }
+        confirmAsk(`изменить баланс ${u.name} на ${delta > 0 ? "+" : ""}${fmt(delta)}?`, async () => {
+          await api("/api/admin/balance", {user_id: u.id, delta, reason: c.querySelector("#abr").value.trim()}); reload(); });
+      };
+      c.querySelector("#afw").onclick = () => confirmAsk(`${u.is_banned ? "разблокировать" : "заблокировать"} кошелёк ${u.name}?`, async () => {
+        await api("/api/admin/flag", {user_id: u.id, field: "is_banned", value: !u.is_banned}); reload(); });
+      c.querySelector("#afb").onclick = () => confirmAsk(`${u.bot_banned ? "разрешить" : "запретить"} ${u.name} пользоваться ботом?`, async () => {
+        await api("/api/admin/flag", {user_id: u.id, field: "bot_banned", value: !u.bot_banned}); reload(); });
+      c.querySelector("#afp").onclick = () => confirmAsk(`сбросить приватный код ${u.name}? ему придётся создать новый.`, async () => {
+        await api("/api/admin/reset_pin", {user_id: u.id}); tg.showAlert("сброшено"); reload(); });
+    } catch (e) { if (alive(c)) c.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+  }
+
   // ---- предложка ----
   function viewSuggest(box) {
     box.innerHTML = `
@@ -432,6 +555,7 @@
   (async function () {
     try {
       const s = await api("/api/gate/status");
+      isOwner = !!s.owner;
       if (s.need === "register") showGate(); else if (!state) load();
     } catch (e) {}
   })();
