@@ -241,6 +241,7 @@
         <button class="mcard" data-s="rates"><span class="ic">📈</span><span><div class="t">курс</div><div class="s">курс валют и как пользуются виткоинами</div></span></button>
         <button class="mcard" data-s="stats"><span class="ic">📊</span><span><div class="t">статистика</div><div class="s">сколько людей в боте и как давно он работает</div></span></button>
         ${isOwner ? `<button class="mcard" data-s="admin"><span class="ic">🛠</span><span><div class="t">админка</div><div class="s">игроки, предметы, подозрительные</div></span></button>` : ""}
+        <button class="mcard" data-s="rules"><span class="ic">📜</span><span><div class="t">правила</div><div class="s">что можно, чего нельзя и лимиты</div></span></button>
         <button class="mcard" data-s="suggest"><span class="ic">💡</span><span><div class="t">предложка</div><div class="s">идея для бота? напиши Витьку</div></span></button>`;
       div.querySelectorAll(".mcard").forEach(c => c.onclick = () => { sub = c.dataset.s; qrScreen = null; render(); });
       return;
@@ -248,7 +249,7 @@
     div.innerHTML = `<button class="back">← назад</button><div id="sub"><div class="empty">загружаю…</div></div>`;
     div.querySelector(".back").onclick = () => { sub = null; render(); };
     const box = div.querySelector("#sub");
-    ({news: viewNews, events: viewEvents, debts: viewDebts, code: viewCode, qr: viewQr, rates: viewRates, stats: viewStats, admin: viewAdmin, suggest: viewSuggest})[sub](box);
+    ({news: viewNews, events: viewEvents, debts: viewDebts, code: viewCode, qr: viewQr, rates: viewRates, stats: viewStats, rules: viewRules, admin: viewAdmin, suggest: viewSuggest})[sub](box);
   }
 
   // ---- что нового ----
@@ -765,6 +766,15 @@
       else if (Date.now() - t0 > 60000) clearInterval(iv);
     }, 300);
   })();
+
+  // ---- правила ----
+  async function viewRules(box) {
+    try {
+      const d = await api("/api/rules");
+      if (!alive(box)) return;
+      box.innerHTML = `<div class="box"><div class="cm2" style="color:var(--text);font-size:15px;line-height:1.45">${esc(d.text)}</div></div>`;
+    } catch (e) { err(box, e); }
+  }
 
   // ---- предложка ----
   function viewSuggest(box) {
